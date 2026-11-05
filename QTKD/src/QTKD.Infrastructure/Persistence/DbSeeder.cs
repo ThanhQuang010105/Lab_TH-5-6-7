@@ -6,9 +6,25 @@ namespace QTKD.Infrastructure.Persistence;
 
 public static class DbSeeder
 {
+    public static async Task ResetAndSeedAsync(QtkdDbContext db)
+    {
+        // Xóa sạch dữ liệu cũ theo thứ tự bảng con trước, bảng cha sau
+        await db.Database.ExecuteSqlRawAsync(@"
+            TRUNCATE TABLE contract_histories, contract_attachments, contracts, price_items, price_lists, customers 
+            RESTART IDENTITY CASCADE;
+        ");
+
+        await SeedCoreAsync(db);
+    }
+
     public static async Task SeedAsync(QtkdDbContext db)
     {
         if (await db.Customers.AnyAsync()) return;   // chạy lại nhiều lần vẫn an toàn
+        await SeedCoreAsync(db);
+    }
+
+    private static async Task SeedCoreAsync(QtkdDbContext db)
+    {
 
         var minhPhat = new Customer
         {
