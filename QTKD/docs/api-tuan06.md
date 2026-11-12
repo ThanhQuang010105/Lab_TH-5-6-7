@@ -153,7 +153,7 @@ Thêm tệp đính kèm vào hợp đồng (cũng kiểm tra CTR-01).
 { "fileName": "hop-dong-018.pdf" }
 ```
 
-**Response 200 OK:**
+**Response 201 Created:**
 ```json
 { "id": 3, "fileName": "hop-dong-018.pdf" }
 ```
@@ -251,7 +251,7 @@ Thêm đơn giá vào bảng giá.
 { "serviceCode": "CRANE-HOUR", "unitPrice": 1500000 }
 ```
 
-**Response 200 OK:**
+**Response 201 Created:**
 ```json
 { "priceListId": 1, "serviceCode": "CRANE-HOUR", "unitPrice": 1500000 }
 ```

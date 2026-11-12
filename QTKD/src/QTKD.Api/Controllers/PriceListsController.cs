@@ -46,7 +46,7 @@ public class PriceListsController : ControllerBase
         int id, [FromBody] AddPriceItemRequest req, CancellationToken ct)
     {
         var item = await _service.AddItemAsync(id, req, ct);
-        return Ok(item);
+        return StatusCode(StatusCodes.Status201Created, item);
     }
 }
 

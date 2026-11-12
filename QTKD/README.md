@@ -1,13 +1,14 @@
-# QTKD – Quản trị kinh doanh (Tuần 05)
+# QTKD – Quản trị kinh doanh (Tuần 05–07)
 
 Web API ASP.NET Core kết nối PostgreSQL, đọc dữ liệu thật từ database.
 
-**Phạm vi Tuần 05:** dựng nền tảng (solution, entity, DbContext, migration, dữ liệu mẫu) và 2 endpoint đọc dữ liệu:
+**Phạm vi:**
 
-- `GET /api/customers`
-- `GET /api/contracts/{id}`
+- Tuần 05: nền tảng (solution, entity, DbContext, migration, dữ liệu mẫu), `GET /api/customers`, `GET /api/contracts/{id}`.
+- Tuần 06: tạo/sửa Customer, tạo/sửa/gửi trình duyệt Contract (CTR-01..03), bảng giá. Chi tiết API: [docs/api-tuan06.md](docs/api-tuan06.md).
+- Tuần 07: bộ test tự động (36 unit test + 13 integration test), sửa lỗi phát hiện được. Báo cáo: [docs/test-report-tuan07.md](docs/test-report-tuan07.md).
 
-Chưa gồm: tạo/sửa/gửi duyệt hợp đồng (Tuần 06), kiểm thử (Tuần 07), đăng nhập/phân quyền, giao diện web.
+Chưa gồm: Approval đầy đủ, đăng nhập/phân quyền, giao diện web.
 
 ## 1. Yêu cầu cài đặt
 
@@ -120,4 +121,15 @@ Quy tắc đã áp dụng: không đưa mật khẩu lên Git, không trả enti
 ## 7. Ghi chú cho các tuần sau
 
 - Tuần 06: thêm chức năng vào `Application/Services` và `Api/Controllers`; quy tắc CTR-01..03 ném `BusinessRuleException`.
-- Tuần 07: thêm test vào `tests/`, dùng `WebApplicationFactory<Program>` với database `qtkd_test`.
+## 8. Chạy kiểm thử (Tuần 07)
+
+```powershell
+dotnet test                              # unit + integration
+dotnet test tests/QTKD.UnitTests         # không cần PostgreSQL
+dotnet test tests/QTKD.IntegrationTests  # cần PostgreSQL
+```
+
+- Unit test dùng EF Core InMemory.
+- Integration test dùng `WebApplicationFactory<Program>` và **luôn** nối database `qtkd_test` (tự migrate + seed lại mỗi lần chạy, không đụng `qtkd`).
+- Chuỗi kết nối lấy từ biến môi trường `QTKD_TEST_CONNECTION`, nếu không có thì lấy từ User Secrets của `QTKD.Api` (cùng máy chủ/tài khoản, chỉ đổi tên database).
+- Kết quả TRX: [docs/test-results/](docs/test-results/). Lỗi đã sửa và hạn chế còn tồn tại: [docs/test-report-tuan07.md](docs/test-report-tuan07.md).

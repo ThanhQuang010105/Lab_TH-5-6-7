@@ -4,6 +4,7 @@ using QTKD.Application.Interfaces;
 using QTKD.Domain.Entities;
 using QTKD.Domain.Enums;
 using QTKD.Domain.Exceptions;
+using QTKD.Domain.Rules;
 
 namespace QTKD.Application.Services;
 
@@ -102,18 +103,17 @@ public class ContractService : IContractService
         if (errors.Any())
             throw new BusinessRuleException("VALIDATION", "Dữ liệu không hợp lệ.", errors);
 
-        // Kiểm tra Customer nếu thay đổi
-        if (req.CustomerId != contract.CustomerId)
-        {
-            var customer = await _db.Customers.FindAsync(new object[] { req.CustomerId }, ct);
-            if (customer is null)
-                throw new BusinessRuleException("CUSTOMER_NOT_FOUND", "Khách hàng không tồn tại.");
-            if (customer.Status != CustomerStatus.Active)
-                throw new BusinessRuleException("CUSTOMER_INACTIVE", "Khách hàng không ở trạng thái Active.");
+        // Customer được tham chiếu phải tồn tại và Active (kể cả khi không đổi khách hàng)
+        var customer = req.CustomerId == contract.CustomerId
+            ? contract.Customer
+            : await _db.Customers.FindAsync(new object[] { req.CustomerId }, ct);
+        if (customer is null)
+            throw new BusinessRuleException("CUSTOMER_NOT_FOUND", "Khách hàng không tồn tại.");
+        if (customer.Status != CustomerStatus.Active)
+            throw new BusinessRuleException("CUSTOMER_INACTIVE", "Khách hàng không ở trạng thái Active.");
 
-            contract.CustomerId = req.CustomerId;
-            contract.Customer   = customer;
-        }
+        contract.CustomerId = req.CustomerId;
+        contract.Customer   = customer;
 
         contract.StartDate    = req.StartDate;
         contract.EndDate      = req.EndDate;
@@ -197,10 +197,10 @@ public class ContractService : IContractService
             throw new BusinessRuleException("CTR-02",
                 "Hợp đồng chưa đáp ứng điều kiện gửi trình duyệt (CTR-02).", violations);
 
-        // CTR-03: không chuyển Draft → Approved trực tiếp 
-        // (đảm bảo bằng code: chỉ chuyển sang PendingApproval)
-
+        // CTR-03: không chuyển Draft → Approved trực tiếp (kiểm tra bằng bảng chuyển trạng thái)
         var fromStatus = contract.Status;
+        ContractTransitions.EnsureCanTransition(fromStatus, ContractStatus.PendingApproval);
+
         contract.Status      = ContractStatus.PendingApproval;
         contract.SubmittedAt = DateTime.UtcNow;
 

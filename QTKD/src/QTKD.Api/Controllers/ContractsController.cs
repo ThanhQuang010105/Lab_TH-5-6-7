@@ -47,7 +47,7 @@ public class ContractsController : ControllerBase
         int id, [FromBody] AddAttachmentRequest req, CancellationToken ct)
     {
         var attachment = await _service.AddAttachmentAsync(id, req, ct);
-        return Ok(attachment);
+        return StatusCode(StatusCodes.Status201Created, attachment);
     }
 
     // POST /api/contracts/{id}/submit  (US03)
